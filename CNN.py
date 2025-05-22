@@ -8,12 +8,29 @@ from torchvision.transforms import ToTensor
 from torch.utils.data import DataLoader
 from torchmetrics import Accuracy, Precision, F1Score, ConfusionMatrix
 import seaborn as sns
+from tqdm.auto import tqdm # progress bar
 
 '''
 This is a simple implementation of a Convolutional Neural Network (CNN) for a multi-class image classification.
 The images come from the FashionMNIST Dataset.
 The code is mostly based on this implementation: https://www.learnpytorch.io/03_pytorch_computer_vision/
 '''
+
+from timeit import default_timer as timer 
+def print_train_time(start: float, end: float, device: torch.device = 'CPU'):
+    """Prints difference between start and end time.
+
+    Args:
+        start (float): Start time of computation (preferred in timeit format). 
+        end (float): End time of computation.
+        device ([type], optional): Device that compute is running on. Defaults to CPU.
+
+    Returns:
+        float: time between start and end in seconds (higher is longer).
+    """
+    total_time = end - start
+    print(f"Train time on {device}: {total_time:.3f} seconds")
+    return total_time
 
 class CNN(nn.Module):
     def __init__(self, input_layer, hidden_layers, output_layer):
@@ -103,8 +120,9 @@ optimizer = torch.optim.SGD(params= Model.parameters(), lr= 0.1)
 
 # Training the Model
 epochs = 3
-for i in range(epochs):
-    print(f"Epoch: {i}\n-------")
+train_time_start_on_cpu = timer()
+for i in tqdm(range(epochs)):
+    print(f"Epoch: {i+1}\n-------")
     train_loss_per_batch = 0
     for batch, (X, y) in enumerate(train_dataloader):
         Model.train()
@@ -140,3 +158,8 @@ for i in range(epochs):
 
     ## Print out what's happening
     print(f"\nTrain loss: {train_loss_per_batch:.5f} | Test loss: {test_loss:.5f}\n")
+
+# Calculate training time      
+train_time_end_on_cpu = timer()
+total_train_time_model_0 = print_train_time(start=train_time_start_on_cpu, 
+                                           end=train_time_end_on_cpu)
